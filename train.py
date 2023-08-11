@@ -20,9 +20,9 @@ lrate = 0.01
 epochs = 100
 weight_decay = 5e-7
 ##############
-path_data = "../MRI_images/processed_data/"
-path2save = "./checkpoint/vae_t1/model_vae_epoch_{}.pt"
-dir_info = './infor'       
+path_data = "voxel_data/processed_data"
+path2save = "checkpoint/vae_t1/model_vae_epoch_{}.pt"
+dir_info = 'infor'       
 f = open(os.path.join(dir_info,'model_vae_t1.csv'),'w',newline='')
 
 
@@ -37,7 +37,7 @@ criterion_dis = loss.KLDivergence()
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print(" GPU is activated" if device else " CPU is activated")
-no_images = len(glob.glob(path_data + "/*.nii"))
+no_images = len(glob.glob(path_data + "/*.mat"))
 print("Number of MRI images: ", no_images)
 if __name__=="__main__":
     vae_model = model.VAE()

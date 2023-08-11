@@ -15,6 +15,7 @@ class KLDivergence(nn.Module):
         N = H x W x D
         """
         self.N = 80*96*80
+        
     def forward(self, z_mean, z_log_sigma):
         z_log_var = z_log_sigma * 2
         #return (1/self.N) * ( (z_mean**2 + z_var**2 - z_log_var**2 - 1).sum() )

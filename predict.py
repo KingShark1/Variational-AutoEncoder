@@ -15,6 +15,7 @@ import model
 import loss
 import dataloader
 import visualize
+
 ##---------Settings--------------------------
 batch_size = 32
 ##############
@@ -27,6 +28,7 @@ np.random.seed(10)
 torch.manual_seed(10)
 ###################
 ###################
+
 criterion_rec = loss.L1Loss()
 criterion_dis = loss.KLDivergence()
 
@@ -34,6 +36,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 print(" GPU is activated" if device else " CPU is activated")
 no_images = len(glob.glob(path_data + "/*.nii"))
 print("Number of MRI images: ", no_images)
+
 if __name__=="__main__":
     vae_model = torch.load(path_model)
     vae_model.to(device)

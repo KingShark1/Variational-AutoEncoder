@@ -8,7 +8,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
 import math 
-import group_norm
+# import group_norm
+
 class conv_block(nn.Module):
     def __init__(self, ch_in, ch_out, k_size, stride=1, p=1, num_groups=1):
         super(conv_block, self).__init__()
