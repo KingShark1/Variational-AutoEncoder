@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import nibabel as ni
 import os, shutil
 import time
 import random

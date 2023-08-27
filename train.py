@@ -3,7 +3,7 @@ Author: Duy-Phuong Dao
 Email: phuongdd.1997@gmail.com (or duyphuongcri@gmail.com)
 """
 
-import nibabel as ni
+
 import numpy as np
 import os, glob
 import torch 
