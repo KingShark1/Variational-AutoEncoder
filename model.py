@@ -87,7 +87,11 @@ class Encoder(nn.Module):
         
         self.conv6 = conv_block(ch_in=512, ch_out=1024, k_size=3, num_groups=16)
         self.res_block6 = ResNet_block(ch=1024, k_size=3, num_groups=16)
-        self.MaxPool6 = nn.MaxPool3d(6, stride=2, padding=1)
+        self.MaxPool6 = nn.MaxPool3d(3, stride=2, padding=1)
+
+        self.conv7 = conv_block(ch_in=1024, ch_out=2048, k_size=3, num_groups=16)
+        self.res_block7 = ResNet_block(ch=2048, k_size=3, num_groups=16)
+        self.MaxPool7 = nn.MaxPool3d(3, stride=2, padding=1)
 
         self.reset_parameters()
       
@@ -120,16 +124,23 @@ class Encoder(nn.Module):
         x6 = self.conv6(x5)
         x6 = self.res_block6(x6) # torch.Size([1, 1024, 2, 2, 2])
         x6 = self.MaxPool6(x6)
+        
+        x7 = self.conv7(x6)
+        x7 = self.res_block7(x7) # torch.Size([1, 2048, 1, 1, 1])
+        x7 = self.MaxPool7(x7)
         # print("X6 shape : ", x6.shape)
-        return x6
+        return x7
 
 class Decoder(nn.Module):
     """ Decoder Module """
     def __init__(self, latent_dim):
         super(Decoder, self).__init__()
         self.latent_dim = latent_dim
-        self.linear_up = nn.Linear(latent_dim, 1024)
+        self.linear_up = nn.Linear(latent_dim, 2048)
         self.relu = nn.ReLU()
+        
+        self.upsize7 = up_conv(ch_in=2048, ch_out=1024, k_size=1, scale=2)
+        self.res_block7 = ResNet_block(ch=1024, k_size=3, num_groups=16)
         self.upsize6 = up_conv(ch_in=1024, ch_out=512, k_size=1, scale=2)
         self.res_block6 = ResNet_block(ch=512, k_size=3, num_groups=16)
         self.upsize5 = up_conv(ch_in=512, ch_out=256, k_size=1, scale=2)
@@ -151,18 +162,21 @@ class Decoder(nn.Module):
             torch.nn.init.uniform_(weight, -stdv, stdv)
 
     def forward(self, x):
-        x6_ = self.linear_up(x)
-        x6_ = self.relu(x6_)
+        x7_ = self.linear_up(x)
+        x7_ = self.relu(x7_)
 
-        x6_ = x6_.view(-1, 1024, 1, 1, 1)
-        x6_ = self.upsize6(x6_) 
+        x7_ = x7_.view(-1, 2048, 1, 1, 1)
+        x7_ = self.upsize7(x7_) 
+        x7_ = self.res_block7(x7_)
+
+        x6_ = self.upsize6(x7_) 
         x6_ = self.res_block6(x6_)
         
         x5_ = self.upsize5(x6_)
         x5_ = self.res_block5(x5_)
         
         x4_ = self.upsize4(x5_)
-        x4 = self.res_block4(x4_)
+        x4_ = self.res_block4(x4_)
 
         x3_ = self.upsize3(x4_) 
         x3_ = self.res_block3(x3_)
