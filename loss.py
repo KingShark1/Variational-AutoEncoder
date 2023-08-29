@@ -36,6 +36,5 @@ class L1Loss(nn.Module):
         super(L1Loss, self).__init__()
         
     def forward(self, x, y): 
-        print("Y.shape in L1 Loss : ", y.shape)
         N = y.shape[0]*y.shape[1]*y.shape[2]*y.shape[3]*y.shape[4]
         return  ( (x - y).abs()).sum() / N

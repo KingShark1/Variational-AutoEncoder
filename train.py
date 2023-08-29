@@ -15,7 +15,7 @@ import loss
 import dataloader
 
 ##---------Settings--------------------------
-batch_size = 8
+batch_size = 3
 lrate = 0.01
 epochs = 100
 weight_decay = 5e-7

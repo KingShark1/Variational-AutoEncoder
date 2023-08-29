@@ -186,7 +186,7 @@ class Decoder(nn.Module):
 
         x1_ = self.upsize1(x2_) 
         x1_ = self.res_block1(x1_)
-        print("X1 : shape", x1_.shape)
+
         return x1_
 
 
@@ -195,8 +195,8 @@ class VAE(nn.Module):
         super(VAE, self).__init__()
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.latent_dim = latent_dim
-        self.z_mean = nn.Linear(1024, latent_dim)
-        self.z_log_sigma = nn.Linear(1024, latent_dim)
+        self.z_mean = nn.Linear(2048, latent_dim)
+        self.z_log_sigma = nn.Linear(2048, latent_dim)
         self.epsilon = torch.normal(size=(1, latent_dim), mean=0, std=1.0, device=self.device)
         self.encoder = Encoder()
         self.decoder = Decoder(latent_dim)
@@ -209,7 +209,6 @@ class VAE(nn.Module):
             torch.nn.init.uniform_(weight, -stdv, stdv)
 
     def forward(self, x):
-        print(x.shape)
         x = self.encoder(x)        
         x = torch.flatten(x, start_dim=1)
         z_mean = self.z_mean(x)
