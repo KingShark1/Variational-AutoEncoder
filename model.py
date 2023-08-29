@@ -80,6 +80,14 @@ class Encoder(nn.Module):
         self.conv4 = conv_block(ch_in=128, ch_out=256, k_size=3, num_groups=16)
         self.res_block4 = ResNet_block(ch=256, k_size=3, num_groups=16)
         self.MaxPool4 = nn.MaxPool3d(3, stride=2, padding=1)
+        
+        self.conv5 = conv_block(ch_in=256, ch_out=512, k_size=3, num_groups=16)
+        self.res_block5 = ResNet_block(ch=512, k_size=3, num_groups=16)
+        self.MaxPool5 = nn.MaxPool3d(3, stride=2, padding=1)
+        
+        self.conv6 = conv_block(ch_in=512, ch_out=1024, k_size=3, num_groups=16)
+        self.res_block6 = ResNet_block(ch=1024, k_size=3, num_groups=16)
+        self.MaxPool6 = nn.MaxPool3d(6, stride=2, padding=1)
 
         self.reset_parameters()
       
@@ -104,19 +112,28 @@ class Encoder(nn.Module):
         x4 = self.conv4(x3)
         x4 = self.res_block4(x4) # torch.Size([1, 256, 2, 3, 2])
         x4 = self.MaxPool4(x4) # torch.Size([1, 256, 1, 1, 1])
-        # print("x1 shape: ", x1.shape)
-        # print("x2 shape: ", x2.shape)
-        # print("x3 shape: ", x3.shape)
-        # print("x4 shape: ", x4.shape) 
-        return x4
+        
+        x5 = self.conv5(x4)
+        x5 = self.res_block5(x5) # torch.Size([1, 512, 4, 4, 4])
+        x5 = self.MaxPool5(x5)
+        
+        x6 = self.conv6(x5)
+        x6 = self.res_block6(x6) # torch.Size([1, 1024, 2, 2, 2])
+        x6 = self.MaxPool6(x6)
+        # print("X6 shape : ", x6.shape)
+        return x6
 
 class Decoder(nn.Module):
     """ Decoder Module """
     def __init__(self, latent_dim):
         super(Decoder, self).__init__()
         self.latent_dim = latent_dim
-        self.linear_up = nn.Linear(latent_dim, 256*150)
+        self.linear_up = nn.Linear(latent_dim, 1024)
         self.relu = nn.ReLU()
+        self.upsize6 = up_conv(ch_in=1024, ch_out=512, k_size=1, scale=2)
+        self.res_block6 = ResNet_block(ch=512, k_size=3, num_groups=16)
+        self.upsize5 = up_conv(ch_in=512, ch_out=256, k_size=1, scale=2)
+        self.res_block5 = ResNet_block(ch=256, k_size=3, num_groups=16)
         self.upsize4 = up_conv(ch_in=256, ch_out=128, k_size=1, scale=2)
         self.res_block4 = ResNet_block(ch=128, k_size=3, num_groups=16)
         self.upsize3 = up_conv(ch_in=128, ch_out=64, k_size=1, scale=2)
@@ -134,12 +151,18 @@ class Decoder(nn.Module):
             torch.nn.init.uniform_(weight, -stdv, stdv)
 
     def forward(self, x):
-        x4_ = self.linear_up(x)
-        x4_ = self.relu(x4_)
+        x6_ = self.linear_up(x)
+        x6_ = self.relu(x6_)
 
-        x4_ = x4_.view(-1, 256, 5, 6, 5)
-        x4_ = self.upsize4(x4_) 
-        x4_ = self.res_block4(x4_)
+        x6_ = x6_.view(-1, 1024, 1, 1, 1)
+        x6_ = self.upsize6(x6_) 
+        x6_ = self.res_block6(x6_)
+        
+        x5_ = self.upsize5(x6_)
+        x5_ = self.res_block5(x5_)
+        
+        x4_ = self.upsize4(x5_)
+        x4 = self.res_block4(x4_)
 
         x3_ = self.upsize3(x4_) 
         x3_ = self.res_block3(x3_)
@@ -149,7 +172,7 @@ class Decoder(nn.Module):
 
         x1_ = self.upsize1(x2_) 
         x1_ = self.res_block1(x1_)
-
+        print("X1 : shape", x1_.shape)
         return x1_
 
 
@@ -158,8 +181,8 @@ class VAE(nn.Module):
         super(VAE, self).__init__()
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.latent_dim = latent_dim
-        self.z_mean = nn.Linear(256*150, latent_dim)
-        self.z_log_sigma = nn.Linear(256*150, latent_dim)
+        self.z_mean = nn.Linear(1024, latent_dim)
+        self.z_log_sigma = nn.Linear(1024, latent_dim)
         self.epsilon = torch.normal(size=(1, latent_dim), mean=0, std=1.0, device=self.device)
         self.encoder = Encoder()
         self.decoder = Decoder(latent_dim)
@@ -172,7 +195,8 @@ class VAE(nn.Module):
             torch.nn.init.uniform_(weight, -stdv, stdv)
 
     def forward(self, x):
-        x = self.encoder(x)
+        print(x.shape)
+        x = self.encoder(x)        
         x = torch.flatten(x, start_dim=1)
         z_mean = self.z_mean(x)
         z_log_sigma = self.z_log_sigma(x)

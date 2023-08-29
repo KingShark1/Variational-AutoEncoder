@@ -14,7 +14,7 @@ class KLDivergence(nn.Module):
         N :  the index N spans all dimensions of input 
         N = H x W x D
         """
-        self.N = 80*96*80
+        self.N = 128*128*128
         
     def forward(self, z_mean, z_log_sigma):
         z_log_var = z_log_sigma * 2
@@ -36,5 +36,6 @@ class L1Loss(nn.Module):
         super(L1Loss, self).__init__()
         
     def forward(self, x, y): 
+        print("Y.shape in L1 Loss : ", y.shape)
         N = y.shape[0]*y.shape[1]*y.shape[2]*y.shape[3]*y.shape[4]
         return  ( (x - y).abs()).sum() / N
