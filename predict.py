@@ -17,7 +17,7 @@ import dataloader
 import visualize
 
 ##---------Settings--------------------------
-batch_size = 32
+batch_size = 2
 ##############
 path_data = "/home/ubuntu/Desktop/DuyPhuong/VAE/data/test"
 path_model = "./checkpoint/vae_t1/model_vae_epoch_43.pt"
@@ -68,6 +68,7 @@ if __name__=="__main__":
     z = np.concatenate(z, axis=0)
     dataloader.save_data_to_csv("./latent_space_z.csv", z)
     print(z.shape)
+    print(y.shape)
 
 
 
