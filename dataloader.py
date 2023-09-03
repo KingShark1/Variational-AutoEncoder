@@ -5,7 +5,7 @@ import time
 import random
 import pandas as pd 
 import scipy.io as sio
-import h5py
+
 
 def split_train_test(dir, ratio_test=0.15):
     if not os.path.exists(os.path.join(dir, "train")): os.mkdir(os.path.join(dir, "train"))

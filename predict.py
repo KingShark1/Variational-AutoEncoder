@@ -3,7 +3,7 @@ Author: Duy-Phuong Dao
 Email: phuongdd.1997@gmail.com (or duyphuongcri@gmail.com)
 """
 
-import nibabel as ni
+# import nibabel as ni
 import numpy as np
 import os, glob
 import torch 
@@ -19,8 +19,8 @@ import visualize
 ##---------Settings--------------------------
 batch_size = 2
 ##############
-path_data = "/home/ubuntu/Desktop/DuyPhuong/VAE/data/test"
-path_model = "./checkpoint/vae_t1/model_vae_epoch_43.pt"
+path_data = "test_data"
+path_model = "checkpoint/vae_t1/model_vae_epoch_34.pt"
 ####################
 verbose = True
 log = print if verbose else lambda *x, **i: None
@@ -34,7 +34,7 @@ criterion_dis = loss.KLDivergence()
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print(" GPU is activated" if device else " CPU is activated")
-no_images = len(glob.glob(path_data + "/*.nii"))
+no_images = len(glob.glob(path_data + "/*.mat"))
 print("Number of MRI images: ", no_images)
 
 if __name__=="__main__":
@@ -63,12 +63,11 @@ if __name__=="__main__":
             total_loss += total_loss_batch.item() * batch_images.shape[0]
 
             # display
-            #visualize.display_image(batch_images, y)
+            visualize.save_and_display_image(batch_images, y)
     print("Reconstruct Loss: {:.4f} | KL Loss: {:.4f}".format(loss_rec/ no_images, loss_KL/ no_images))
     z = np.concatenate(z, axis=0)
     dataloader.save_data_to_csv("./latent_space_z.csv", z)
     print(z.shape)
-    print(y.shape)
 
 
 

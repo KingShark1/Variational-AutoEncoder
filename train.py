@@ -18,7 +18,7 @@ import dataloader
 batch_size = 3
 lrate = 0.01
 epochs = 100
-weight_decay = 5e-7
+weight_decay = 0.01
 ##############
 path_data = "voxel_data/processed_data"
 path2save = "checkpoint/vae_t1/model_vae_epoch_{}.pt"
