@@ -64,7 +64,11 @@ def load_mri_images(path, batch_size):
             image = sio.loadmat(os.path.join(path, filenames[i]))['tensor']
             image = np.array(image, dtype=np.float32)
             image = torch.Tensor(image)
-            image = torch.reshape(image, (1, 1, 128, 128, 128))
+            try:
+                image = torch.reshape(image, (1, 1, 128, 128, 128))
+            except Exception as e:
+                print(e)
+                print(image.shape)
             #image = (image - image.min()) / (image.max() - image.min())
             image = image / 255.
             batch_image.append(image)
