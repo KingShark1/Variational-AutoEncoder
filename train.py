@@ -8,7 +8,10 @@ import numpy as np
 import os, glob
 import torch 
 import csv
+import wandb
+import random
 from tqdm import tqdm
+
 
 import model
 import loss
@@ -19,11 +22,24 @@ batch_size = 8
 lrate = 0.01
 epochs = 100
 weight_decay = 5e-7
+
+config = {
+    "batch_size": batch_size,
+    "learning_rate": lrate,
+    "epochs": epochs,
+    "weight_decay": weight_decay
+
+}
 ##############
 path_data = "voxel_data/processed_data"
 path2save = "checkpoint/vae_t1/model_vae_epoch_{}.pt"
 dir_info = 'infor'       
 f = open(os.path.join(dir_info,'model_vae_t1.csv'),'w',newline='')
+
+wandb.init(
+    project="VariationalAutoencoder",
+    config=config
+)
 
 
 ####################
@@ -74,7 +90,10 @@ if __name__=="__main__":
         torch.save(vae_model, path2save.format(epoch+1))  
 
         # write csv
-        writer = csv.writer(f)
-        writer.writerow([epoch + 1, '{:04f}'.format(loss_rec_epoch/no_images), 
-                                        '{:04f}'.format(loss_KL_epoch/no_images)])
-    f.close()
+        # writer = csv.writer(f)
+        wandb.log({"Reconstruction_Loss": loss_rec_epoch/no_images,
+                    "KL_Loss": loss_KL_epoch/no_images})
+        # writer.writerow([epoch + 1, '{:04f}'.format(loss_rec_epoch/no_images), 
+                                        # '{:04f}'.format(loss_KL_epoch/no_images)])
+    # f.close()
+    wandb.finish()
